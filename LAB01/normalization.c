@@ -1,34 +1,86 @@
-#include "my_utils.h"
-#include "validation.h"
 #include "normalization.h"
 
-short normalize_num(char *num_str, short *mant, int *order, char *sign_m)
+int normalize_num(huge_float_t *num)
 {
-    mantisa_t mant_temp;
-    int order_temp;
-    char sign_m_temp;
-    char mant_temp_str[MAX_MANTISA_LEN + 1];
+    remove_first_nulls(num->mantisa);
+
+    move_point(num);
     
-    if (is_there_exp(num_str) == EXIT_SUCCESS)
-    {
-        char order_temp_str[MAX_ORDER_LEN + 1];
-        split_by_exp(num_str, mant_temp_str, order_temp_str);
-        sscanf(order_temp_str, "%d", &order_temp);
-    }
-    else
-    {
-        strncpy(mant_temp_str, num_str, MAX_MANTISA_LEN + 1);
-        order_temp = 0;
-    }
-
-    int extra_order = 0;
-    normalize_mant(mant_temp_str, mant_temp, &sign_m_temp);
-    // add_extra_order();
-
     return EXIT_SUCCESS;
 }
 
-void normalize_mant(char *mant_temp_str, mantisa_t *mant_temp, char *sign_m_temp)
+void remove_first_nulls(int *arr)
 {
+    size_t nulls_count = 0;
+    while (arr[nulls_count] == 0)
+        nulls_count++;
 
+    shift_arr_left(arr, nulls_count, 0, MAX_MANTISA_DIGITS * 2);
+}
+
+void shift_arr_left(int *arr, int n, int start, int end)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (i == 1 && end >= MAX_MANTISA_DIGITS + 1)
+            arr[end] = 0;
+        for (int j = start; j < end; j++)
+            arr[j] = arr[j + 1];
+    }
+}
+
+void shift_arr_right(int *arr, int n, int start, int end)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (i == 1 && start == 0)
+            arr[start] = 0;
+        for (int j = end; j > start; j--)
+            arr[j] = arr[j - 1];
+    }
+}
+
+void move_point(huge_float_t *num)
+{
+    int i = 0;
+
+    if (num->mantisa[i] == POINT)
+    {
+        i++;
+        while (num->mantisa[i] == 0)
+            i++;
+        num->order -= (i - 1);
+        shift_arr_left(num->mantisa, i - 1, 1, MAX_MANTISA_DIGITS * 2);
+    }
+    else
+    {
+        for (i = 0; i < MAX_MANTISA_DIGITS + 1; i++)
+            if (num->mantisa[i] == POINT)
+            {
+                shift_arr_left(num->mantisa, 1, i, MAX_MANTISA_DIGITS + 1);
+                break;
+            }
+        num->order += i;
+        shift_arr_right(num->mantisa, 1, 0, MAX_MANTISA_DIGITS + 1);
+        num->mantisa[0] = POINT;
+    }
+}
+
+void round_product(huge_float_t *num)
+{
+    int tens_digit = 1;
+    int sum = 0;
+    for (size_t i = MAX_MANTISA_DIGITS; i > 0; i--)
+    {
+        sum = num->mantisa[i] + tens_digit;
+        num->mantisa[i] = sum % 10;
+        tens_digit = sum / 10;
+        if (tens_digit == 0)
+            break;
+    }
+    if (tens_digit != 0)
+    {
+        shift_arr_right(num->mantisa, 1, 0, MAX_MANTISA_DIGITS);
+        num->order++;
+    }
 }
