@@ -8,18 +8,18 @@ int main(void)
 
     print_intro(); // Вывод информации для пользователя: что делает программа, правила ввода и т.д.
 
-    huge_float_t first_num; // Объявление первого числа
-    huge_float_t second_num; // Объявление второго числа
-    huge_float_t result_num; // Объявление переменной для хранения результата действий над двумя числами
-    short rc = 0; // Переменная для хранения кода возврата
+    huge_float_t first_num = DEFAULT_VALUES; // Объявление первого числа
+    huge_float_t second_num = DEFAULT_VALUES; // Объявление второго числа
+    huge_float_t result_num = DEFAULT_VALUES; // Объявление переменной для хранения результата действий над двумя числами
+    int rc = 0; // Переменная для хранения кода возврата
 
-    rc = input_huge_float(first_num); // Пользовательский ввод первого числа
+    rc = input_huge_float(&first_num); // Пользовательский ввод первого числа
     if (rc == EXIT_SUCCESS)
     {
-        rc = input_huge_float(second_num); // Пользовательский ввод второго числа
+        rc = input_huge_float(&second_num); // Пользовательский ввод второго числа
         if (rc == EXIT_SUCCESS)
         {
-            rc = multiply(first_num, second_num, result_num); // Умножение введенных чисел, получение и запись результата в переменную
+            rc = multiply(&first_num, &second_num, &result_num); // Умножение введенных чисел, получение и запись результата в переменную
             if (rc == EXIT_SUCCESS)
                 print_result(result_num); // Вывод результата умножения двух чисел
         }
